@@ -1,7 +1,7 @@
 from .base import Base
 from enum import Enum
 from datetime import date
-from sqlalchemy import Column, Integer, String, Boolean, Date, Enum as EnumDB
+from sqlalchemy import Column, Integer, String, Boolean, Date, Enum as EnumDB, ForeignKey
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -53,13 +53,19 @@ class Persona(Base):
     direccion = Column(String(100), nullable=False)
     telefono = Column(String(10), nullable=False)
     correo = Column(String(50), nullable=False, unique=True)
-    estado_civil = Column(EnumDB(EstadoCivil), nullable=False)
     disponibilidad = Column(EnumDB(Disponibilidad), nullable=False)
-    fecha_registro = Column(Date, nullable=False, default=date.today())
+    estado_civil = Column(EnumDB(EstadoCivil), nullable=False)
     tipo_licencia = Column(EnumDB(TipoLicencia), default=TipoLicencia.NINGUNA)
     vencimiento_licencia = Column(Date)
     antiguedad_conduccion = Column(Integer, default=0)
     hashed_password = Column(String)  # Campo para la contraseña hasheada
+    id_rol = Column(Integer, ForeignKey('rol.id_rol'))  # Nueva columna para la relación con Rol
+    fecha_registro = Column(Date, nullable=False, default=date.today)  # Agregado campo fecha_registro
+    
+    # Relación con Rol
+    rol = relationship("Rol", back_populates="personas")
+    
+    # Otras relaciones existentes
     asignaciones_vehiculos = relationship(
         "AsignacionVehiculoConductor", 
         back_populates="persona",

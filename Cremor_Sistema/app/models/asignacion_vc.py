@@ -2,11 +2,9 @@ from .base import Base
 from datetime import date
 from enum import Enum
 from sqlalchemy import Column, Integer, Date, ForeignKey
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship
 from sqlalchemy import event
 from sqlalchemy import Enum as EnumDB
-
-Base = declarative_base()
 
 class MotivoAsignacion(str, Enum):
     SERVICIO = "SERVICIO"

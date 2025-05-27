@@ -47,3 +47,8 @@ def delete_rol(rol_id: int, db: Session = Depends(get_db)):
     db.delete(db_rol)
     db.commit()
     return {"message": "Rol eliminado correctamente"}
+
+@router.get("/tipos", response_model=list[str])
+def get_tipos_roles():
+    """Obtener todos los tipos de roles disponibles"""
+    return [rol.value for rol in models.NombreRol]

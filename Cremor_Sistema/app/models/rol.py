@@ -1,7 +1,7 @@
 from enum import Enum
 from datetime import date
 from sqlalchemy import Column, Integer, String, Boolean, Date, Enum as EnumDB
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 from .base import Base
 
 class NombreRol(str, Enum):
@@ -38,6 +38,9 @@ class Rol(Base):
     departamento = Column(String(50))
     fecha_creacion = Column(Date, nullable=False, default=date.today())
     activo = Column(Boolean, nullable=False, default=True)
+    
+    # Relación con Persona
+    personas = relationship("Persona", back_populates="rol")
 
     @property
     def nombre_completo(self):

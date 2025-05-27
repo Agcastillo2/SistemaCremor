@@ -43,3 +43,9 @@ class Rol(RolBase):
 
     class Config:
         from_attributes = True
+
+    def model_dump(self, *args, **kwargs):
+        data = super().model_dump(*args, **kwargs)
+        if 'nombre_rol' in data:
+            data['nombre_rol'] = self.nombre_rol.value  # Convert enum to string
+        return data

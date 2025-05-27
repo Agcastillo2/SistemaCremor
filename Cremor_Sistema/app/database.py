@@ -6,7 +6,7 @@ from .models.base import Base  # Importa Base desde el archivo central
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:admin@localhost:5432/Cremor_Sistema_db")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/Cremor_Sistema_db")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

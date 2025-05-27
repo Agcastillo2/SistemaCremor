@@ -3,11 +3,13 @@ from .vehiculo import VehiculoBase, VehiculoCreate, Vehiculo
 from .rol import RolBase, RolCreate, Rol
 from .leche import LecheBase,LecheCreate,Leche
 from .asignacion_vc import AsignacionVCBase,AsignacionVCCreate,AsignacionVC
+from .persona_auth import LoginCredentials
 
 __all__ = [
     "PersonaBase", "PersonaCreate", "Persona",
     "VehiculoBase", "VehiculoCreate", "Vehiculo",
     "RolBase", "RolCreate", "Rol",
     "LecheBase", "LecheCreate", "Leche",
-    "AsignacionVCBase", "AsignacionVCCreate", "AsignacionVC"
+    "AsignacionVCBase", "AsignacionVCCreate", "AsignacionVC",
+    "LoginCredentials"
 ]
