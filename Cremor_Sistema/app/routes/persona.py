@@ -1,100 +1,116 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
-from .. import models, schemas
+from .. import models, schemas # Asegúrate de que los esquemas (schemas) estén bien definidos
 from ..database import get_db
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
-router = APIRouter(prefix="/personas", tags=["personas"])
+# --- Configuración del Router ---
+router = APIRouter(
+    prefix="/personas",
+    tags=["personas"],
+    responses={404: {"description": "No encontrado"}},
+)
 
-# Configuración para el hashing de contraseñas
+# --- Configuración para Hashing de Contraseñas ---
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def get_password_hash(password):
+def get_password_hash(password: str) -> str:
+    """Genera el hash de una contraseña."""
     return pwd_context.hash(password)
 
-def verify_password(plain_password, hashed_password):
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verifica si una contraseña en texto plano coincide con su hash."""
     return pwd_context.verify(plain_password, hashed_password)
 
+# --- Modelo Pydantic para el reseteo de contraseña ---
 class PasswordReset(BaseModel):
     numero_identificacion: str
     new_password: str
 
-@router.post("/", response_model=schemas.Persona)
+# --- Endpoints del Router ---
+
+@router.post("/", response_model=schemas.Persona, status_code=201)
 def create_persona(persona: schemas.PersonaCreate, db: Session = Depends(get_db)):
-    # Verificar si el correo ya está registrado
-    db_persona = db.query(models.Persona).filter(
-        models.Persona.correo == persona.correo
-    ).first()
-    if db_persona:
-        raise HTTPException(status_code=400, detail="Correo ya registrado")
+    """
+    Crea una nueva persona en la base de datos.
+    """
+    # 1. Verificar si el correo ya existe
+    if db.query(models.Persona).filter(models.Persona.correo == persona.correo).first():
+        raise HTTPException(status_code=400, detail="El correo ya está registrado")
     
-    # Verificar si el número de identificación ya existe
-    db_persona = db.query(models.Persona).filter(
-        models.Persona.numero_identificacion == persona.numero_identificacion
-    ).first()
-    if db_persona:
-        raise HTTPException(status_code=400, detail="Número de identificación ya registrado")
+    # 2. Verificar si el número de identificación ya existe
+    if db.query(models.Persona).filter(models.Persona.numero_identificacion == persona.numero_identificacion).first():
+        raise HTTPException(status_code=400, detail="El número de identificación ya está registrado")
     
-    # Hash de la contraseña
+    # 3. Hashear la contraseña inicial
     hashed_password = get_password_hash(persona.password)
     
+    # 4. Crear el objeto de la base de datos (CORREGIDO)
+    # Excluimos todos los campos de contraseña que NO están en el modelo de BD `Persona`.
+    persona_data = persona.model_dump(exclude={"password", "current_password", "new_password"})
     db_persona = models.Persona(
-        **persona.model_dump(exclude={"password"}),
+        **persona_data,
         hashed_password=hashed_password
     )
     
+    # 5. Guardar en la base de datos
     db.add(db_persona)
     db.commit()
     db.refresh(db_persona)
+    
     return db_persona
 
 @router.get("/", response_model=list[schemas.Persona])
 def read_personas(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Obtiene una lista de todas las personas.
+    """
     personas = db.query(models.Persona).offset(skip).limit(limit).all()
     return personas
 
 @router.get("/{persona_id}", response_model=schemas.Persona)
 def read_persona(persona_id: int, db: Session = Depends(get_db)):
-    db_persona = db.query(models.Persona).filter(
-        models.Persona.id_persona == persona_id
-    ).first()
+    """
+    Obtiene los detalles de una persona específica por su ID.
+    """
+    db_persona = db.query(models.Persona).filter(models.Persona.id_persona == persona_id).first()
     if db_persona is None:
         raise HTTPException(status_code=404, detail="Persona no encontrada")
     return db_persona
 
 @router.put("/{persona_id}", response_model=schemas.Persona)
-def update_persona(
-    persona_id: int, 
-    persona: schemas.PersonaCreate, 
-    db: Session = Depends(get_db)
-):
-    db_persona = db.query(models.Persona).filter(
-        models.Persona.id_persona == persona_id
-    ).first()
+def update_persona(persona_id: int, persona_update: schemas.PersonaCreate, db: Session = Depends(get_db)):
+    """
+    Actualiza la información de una persona y, opcionalmente, su contraseña.
+    """
+    db_persona = db.query(models.Persona).filter(models.Persona.id_persona == persona_id).first()
     if db_persona is None:
         raise HTTPException(status_code=404, detail="Persona no encontrada")
     
-    # Actualizar campos (sin contraseña)
-    for field, value in persona.model_dump(exclude={"password", "current_password", "new_password"}).items():
+    # 1. Actualizar los campos de datos (excluyendo cualquier campo de contraseña)
+    update_data = persona_update.model_dump(exclude_unset=True, exclude={"password", "current_password", "new_password"})
+    for field, value in update_data.items():
         setattr(db_persona, field, value)
     
-    # Manejar cambio de contraseña: requiere current_password y new_password
-    if persona.new_password:
-        # Verificar contraseña actual
-        if not persona.current_password or not verify_password(persona.current_password, db_persona.hashed_password):
-            raise HTTPException(status_code=400, detail="Contraseña actual incorrecta")
-        db_persona.hashed_password = get_password_hash(persona.new_password)
+    # 2. Manejar el cambio de contraseña si se proporcionan las contraseñas necesarias
+    if persona_update.new_password and persona_update.current_password:
+        # Verificar que la contraseña actual sea correcta
+        if not verify_password(persona_update.current_password, db_persona.hashed_password):
+            raise HTTPException(status_code=400, detail="La contraseña actual es incorrecta")
+        # Actualizar a la nueva contraseña
+        db_persona.hashed_password = get_password_hash(persona_update.new_password)
     
     db.commit()
     db.refresh(db_persona)
     return db_persona
 
-@router.delete("/{persona_id}")
+@router.delete("/{persona_id}", status_code=200)
 def delete_persona(persona_id: int, db: Session = Depends(get_db)):
-    db_persona = db.query(models.Persona).filter(
-        models.Persona.id_persona == persona_id
-    ).first()
+    """
+    Elimina una persona de la base de datos.
+    """
+    db_persona = db.query(models.Persona).filter(models.Persona.id_persona == persona_id).first()
     if db_persona is None:
         raise HTTPException(status_code=404, detail="Persona no encontrada")
     
@@ -104,58 +120,42 @@ def delete_persona(persona_id: int, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=schemas.Persona)
 def login_persona(credentials: schemas.LoginCredentials, db: Session = Depends(get_db)):
-    # Query con join para obtener la información del rol
-    db_persona = db.query(models.Persona).options(
-        joinedload(models.Persona.rol)
-    ).filter(
+    """
+    Autentica a un usuario y devuelve su información, incluyendo su rol.
+    """
+    db_persona = db.query(models.Persona).options(joinedload(models.Persona.rol)).filter(
         models.Persona.numero_identificacion == credentials.numero_identificacion
     ).first()
     
-    if not db_persona:
+    if not db_persona or not verify_password(credentials.password, db_persona.hashed_password):
         raise HTTPException(
             status_code=401,
-            detail="Credenciales incorrectas"
+            detail="Credenciales incorrectas",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     
-    if not verify_password(credentials.password, db_persona.hashed_password):
-        raise HTTPException(
-            status_code=401,
-            detail="Credenciales incorrectas"
-        )
-    
-    # Verificar si el usuario tiene un rol asignado
-    if db_persona.rol is None:
-        # Si no tiene rol, asignamos uno por defecto (por ejemplo, el rol con ID 1)
-        default_rol = db.query(models.Rol).filter(models.Rol.id_rol == 1).first()
-        if default_rol:
-            db_persona.rol = default_rol
-            db_persona.id_rol = default_rol.id_rol
-            db.commit()
-            db.refresh(db_persona)
-        
     return db_persona
 
 @router.get("/by-id/{numero_identificacion}", response_model=schemas.Persona)
 def get_persona_by_identificacion(numero_identificacion: str, db: Session = Depends(get_db)):
-    db_persona = db.query(models.Persona).filter(
-        models.Persona.numero_identificacion == numero_identificacion
-    ).first()
-    
+    """
+    Obtiene los detalles de una persona por su número de identificación.
+    """
+    db_persona = db.query(models.Persona).filter(models.Persona.numero_identificacion == numero_identificacion).first()
     if not db_persona:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    
     return db_persona
 
-@router.post("/reset-password", response_model=dict)
+@router.post("/reset-password", status_code=200)
 def reset_password(datos: PasswordReset, db: Session = Depends(get_db)):
-    db_persona = db.query(models.Persona).filter(
-        models.Persona.numero_identificacion == datos.numero_identificacion
-    ).first()
-    
+    """
+    Restablece la contraseña de un usuario usando su número de identificación.
+    """
+    db_persona = db.query(models.Persona).filter(models.Persona.numero_identificacion == datos.numero_identificacion).first()
     if not db_persona:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
-    # Actualizar la contraseña
+    # Actualizar la contraseña con el nuevo hash
     db_persona.hashed_password = get_password_hash(datos.new_password)
     db.commit()
     

@@ -1,11 +1,30 @@
-# Este archivo puede estar vacío o puedes colocar inicializaciones
-# Para que FastAPI reconozca los routers, puedes importarlos aquí
+# app/__init__.py
 
-from .routes import persona
-from .routes import vehiculo
-from .routes import rol
-from .routes import leche
-from .routes import asignacion_vc
 from .main import app
 
-__all__ = ["app", "persona","vehiculo","rol","leche","asignacion_vc"]
+from .routes import (
+    persona, 
+    vehiculo, 
+    rol, 
+    leche, 
+    asignacion_vc, 
+    puesto, 
+    registro_entrada_salida,
+    reemplazo,
+    hora_extra,
+    notificacion # <-- NUEVO
+)
+
+__all__ = [
+    "app", 
+    "persona", 
+    "vehiculo", 
+    "rol", 
+    "leche", 
+    "asignacion_vc", 
+    "puesto", 
+    "registro_entrada_salida",
+    "reemplazo",
+    "hora_extra",
+    "notificacion" # <-- NUEVO
+]
