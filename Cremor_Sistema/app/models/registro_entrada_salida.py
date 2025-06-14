@@ -23,8 +23,8 @@ class RegistroEntradaSalida(Base):
     id_persona = Column(Integer, ForeignKey("persona.id_persona"), nullable=False)
     id_rol = Column(Integer, ForeignKey("rol.id_rol"), nullable=False)
     id_puesto = Column(Integer, ForeignKey("puesto.id_puesto"), nullable=False)
-    fecha_hora_entrada = Column(DateTime, default=datetime.utcnow)
-    fecha_hora_salida = Column(DateTime, nullable=True)
+    fecha_hora_entrada = Column(DateTime(timezone=True))  # No default, se setea en el endpoint
+    fecha_hora_salida = Column(DateTime(timezone=True), nullable=True)
     estado = Column(EnumDB(EstadoAsistencia), default=EstadoAsistencia.PRESENTE)
     turno = Column(EnumDB(TipoTurno), nullable=False)
     observaciones = Column(String(255), nullable=True)
