@@ -1,0 +1,59 @@
+# Versión de Docker Compose a utilizar. 3.8 es una buena elección moderna.
+version: "3.8"
+
+# Aquí se definen todos los contenedores (servicios) que vamos a gestionar.
+services:
+  # --- 1. Servicio para el servidor de SonarQube ---
+  sonarqube:
+    image: sonarqube:lts-community # Usamos la imagen oficial LTS (Long-Term Support) comunitaria. Es estable y recomendada.
+    container_name: sonarqube_server # Un nombre fácil de recordar para el contenedor.
+    ports:
+      - "9000:9000" # Mapea el puerto 9000 del contenedor al puerto 9000 de tu máquina para acceder a la interfaz web.
+      - "9092:9092" # Puerto usado internamente por SonarQube.
+    networks:
+      - sonarnet # Conecta este servicio a la red 'sonarnet'.
+    environment:
+      # Variables de entorno para que SonarQube se conecte a su base de datos.
+      - SONAR_JDBC_URL=jdbc:postgresql://sonarqube_db:5432/sonar
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar
+    volumes:
+      # Volúmenes para que los datos y la configuración de SonarQube no se pierdan al apagar el contenedor.
+      - sonarqube_conf:/opt/sonarqube/conf
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      # === LA LÍNEA MÁS IMPORTANTE PARA EL PLUGIN DE FLUTTER ===
+      # Mapea tu carpeta local 'extensions/plugins' a la carpeta de plugins dentro del contenedor de SonarQube.
+      - ./extensions/plugins:/opt/sonarqube/extensions/plugins
+    depends_on:
+      # Se asegura de que el contenedor de la base de datos se inicie antes que el de SonarQube.
+      - sonarqube_db
+
+  # --- 2. Servicio para la base de datos de SonarQube (PostgreSQL) ---
+  sonarqube_db:
+    image: postgres:13 # Una versión de PostgreSQL compatible con SonarQube LTS.
+    container_name: sonarqube_database # Nombre para el contenedor de la base de datos.
+    networks:
+      - sonarnet # Conecta este servicio a la misma red 'sonarnet' para que SonarQube pueda encontrarlo.
+    environment:
+      # Credenciales para la base de datos. Deben coincidir exactamente con las usadas en el servicio 'sonarqube'.
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_DB=sonar
+    volumes:
+      # Volumen para que los datos de la base de datos persistan.
+      - sonarqube_postgres_data:/var/lib/postgresql/data
+
+# --- Definición de la Red ---
+# Las redes permiten que los contenedores se comuniquen entre sí de forma aislada.
+networks:
+  sonarnet:
+    driver: bridge # El tipo de red por defecto, ideal para comunicación en un solo host.
+
+# --- Definición de los Volúmenes ---
+# Docker gestionará estos volúmenes para asegurarse de que los datos persistan.
+volumes:
+  sonarqube_conf:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_postgres_data:
