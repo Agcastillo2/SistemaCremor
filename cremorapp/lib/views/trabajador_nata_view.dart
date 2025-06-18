@@ -43,7 +43,7 @@ class TrabajadorNataView extends StatelessWidget {
     final drawerItems = insertRegisterItems(baseItems, context, currentUser);
 
     return Scaffold(
-      appBar: AppBarWithSettings(
+      appBar: const AppBarWithSettings(
         title: 'Panel Trabajador de Nata',
         titleKey: 'trabajador_nata',
         elevation: 4,

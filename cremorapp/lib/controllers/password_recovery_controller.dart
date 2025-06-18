@@ -7,7 +7,7 @@ class PasswordRecoveryController {
   ) async {
     try {
       final url = Uri.parse(
-        'http://192.168.100.159:8000/personas/by-id/$identificacion',
+        'http://192.168.18.8:8001/personas/by-id/$identificacion',
       );
       final response = await http.get(url);
 
@@ -31,9 +31,7 @@ class PasswordRecoveryController {
     String newPassword,
   ) async {
     try {
-      final url = Uri.parse(
-        'http://192.168.100.159:8000/personas/reset-password',
-      );
+      final url = Uri.parse('http://192.168.18.8:8001/personas/reset-password');
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},

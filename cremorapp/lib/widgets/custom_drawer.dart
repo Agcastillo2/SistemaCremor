@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../views/profile_view.dart';
+// Importaciones para las nuevas pantallas (se crearán después)
+import '../views/registro_entrada_screen.dart';
+import '../views/registro_salida_screen.dart';
 
 class CustomDrawer extends StatelessWidget {
+  final int idPersona; // Nuevo parámetro
   final String nombres;
   final String apellidos;
   final String cedula;
@@ -11,6 +15,7 @@ class CustomDrawer extends StatelessWidget {
 
   const CustomDrawer({
     super.key,
+    required this.idPersona, // Añadido idPersona
     required this.nombres,
     required this.apellidos,
     required this.cedula,
@@ -74,6 +79,57 @@ class CustomDrawer extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ProfileView()),
+              );
+            },
+          ),
+          if (rol == 'JEFE_NATA') ...[
+            ListTile(
+              leading: const Icon(Icons.workspaces_outline),
+              title: const Text('Procesos'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Implementar navegación a la pantalla de Procesos
+              },
+            ),
+          ],
+          // Nueva Opción: Registro Entrada
+          ListTile(
+            leading: const Icon(Icons.timer_outlined), // Icono para entrada
+            title: const Text('Registro Entrada'), // TODO: Localizar este texto
+            onTap: () {
+              Navigator.pop(context); // Cerrar el drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => RegistroEntradaScreen(
+                        idPersona: idPersona,
+                        nombres: nombres,
+                        apellidos: apellidos,
+                        rol: rol,
+                        idRol: 1, // TODO: Obtener el ID del rol del login
+                      ),
+                ),
+              );
+            },
+          ),
+          // Nueva Opción: Registro Salida
+          ListTile(
+            leading: const Icon(Icons.timer_off_outlined), // Icono para salida
+            title: const Text('Registro Salida'), // TODO: Localizar este texto
+            onTap: () {
+              Navigator.pop(context); // Cerrar el drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => RegistroSalidaScreen(
+                        idPersona: idPersona,
+                        nombres: nombres,
+                        apellidos: apellidos,
+                        rol: rol,
+                      ),
+                ),
               );
             },
           ),

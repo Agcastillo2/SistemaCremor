@@ -65,10 +65,10 @@
                 "type": "String"
             }
         }
-    },
-    "supervisorPanel": "Supervisor Panel",
+    },    "supervisorPanel": "Supervisor Panel",
     "creamManager": "Cream Manager Panel",
     "iceCreamManager": "Ice Cream Manager Panel",
     "creamWorker": "Cream Worker Panel",
-    "iceCreamWorker": "Ice Cream Worker Panel"
+    "iceCreamWorker": "Ice Cream Worker Panel",
+    "companyName": "INPSEG"
 }

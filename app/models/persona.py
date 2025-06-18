@@ -98,17 +98,25 @@ class Persona(Base):
     reemplazos_realizados = relationship(
         "Reemplazo",
         foreign_keys="[Reemplazo.id_persona_reemplazo]",
-        back_populates="persona_reemplazo"
+        back_populates="persona_reemplazo",
+        cascade="all, delete-orphan"
     )
 
-    # 6. Relación con Hora_Extra
+    # 6. Relación con Proceso
+    procesos = relationship(
+        "Proceso",
+        back_populates="persona",
+        cascade="all, delete-orphan"
+    )
+
+    # 7. Relación con Hora_Extra
     horas_extras = relationship(
         "Hora_Extra",
         back_populates="persona",
         cascade="all, delete-orphan"
     )
 
-    # 7. Relación con Notificacion (cuando la persona envía) (NUEVA)
+    # 8. Relación con Notificacion (cuando la persona envía) (NUEVA)
     notificaciones_enviadas = relationship(
         "Notificacion",
         foreign_keys="[Notificacion.id_remitente]",
@@ -116,13 +124,16 @@ class Persona(Base):
         cascade="all, delete-orphan"
     )
 
-    # 8. Relación con Notificacion (cuando la persona recibe) (NUEVA)
+    # 9. Relación con Notificacion (cuando la persona recibe) (NUEVA)
     notificaciones_recibidas = relationship(
         "Notificacion",
         foreign_keys="[Notificacion.id_destinatario]",
         back_populates="destinatario",
         cascade="all, delete-orphan"
     )
+
+    # Relación con procesos
+    procesos = relationship("Proceso", back_populates="persona")
     
     # --- Propiedades Calculadas ---
     @property

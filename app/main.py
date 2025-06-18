@@ -14,7 +14,8 @@ from .routes import (
     registro_es_router,
     reemplazo_router,
     hora_extra_router,
-    notificacion_router # <-- NUEVO
+    notificacion_router,
+    proceso_router
 )
 
 from .models import (
@@ -27,7 +28,8 @@ from .models import (
     RegistroEntradaSalida,
     Reemplazo,
     Hora_Extra,
-    Notificacion # <-- NUEVO
+    Notificacion,
+    Proceso
 )
 
 app = FastAPI(
@@ -47,7 +49,8 @@ app.include_router(puesto_router)
 app.include_router(registro_es_router)
 app.include_router(reemplazo_router)
 app.include_router(hora_extra_router)
-app.include_router(notificacion_router) # <-- NUEVO
+app.include_router(notificacion_router)
+app.include_router(proceso_router)
 
 @app.get("/", tags=["Root"])
 def read_root():

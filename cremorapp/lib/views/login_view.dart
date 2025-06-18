@@ -8,7 +8,6 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/settings_buttons.dart';
 import '../widgets/app_logo.dart';
-import '../utils/theme.dart';
 import '../utils/ui_helpers.dart';
 
 class LoginView extends StatefulWidget {
@@ -177,9 +176,44 @@ class _LoginViewState extends State<LoginView> {
                             onPressed: _isLoading ? null : _submit,
                             icon: AppIcons.login,
                           ),
+                          UIHelpers.vSpaceMedium,
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pushNamed('/register');
+                            },
+                            child: Text(
+                              'Crear una cuenta',
+                              style: TextStyle(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  '© 2025 CREMOR. Todos los derechos reservados.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  'Versión 1.0.0',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  'Desarrollado por CREMOR',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 12,
                   ),
                 ),
               ],

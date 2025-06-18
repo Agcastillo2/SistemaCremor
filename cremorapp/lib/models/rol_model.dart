@@ -40,7 +40,7 @@ class RolModel {
 
   static Future<List<RolModel>> fetchRoles() async {
     try {
-      final url = Uri.parse('http://192.168.100.159:8000/roles/');
+      final url = Uri.parse('http://192.168.18.8:8001/roles/');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {

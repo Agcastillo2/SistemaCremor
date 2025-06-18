@@ -14,7 +14,7 @@ class LoginController {
     String password,
   ) async {
     try {
-      final url = Uri.parse('http://192.168.100.159:8000/personas/login');
+      final url = Uri.parse('http://192.168.18.8:8001/personas/login');
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},

@@ -58,8 +58,6 @@ class PersonaBase(BaseModel):
 
 class PersonaCreate(PersonaBase):
     password: str
-    current_password: Optional[str] = None  # Campo para validar contraseña actual
-    new_password: Optional[str] = None      # Campo para nueva contraseña
 
 class Persona(PersonaBase):
     id_persona: int

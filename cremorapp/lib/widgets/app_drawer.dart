@@ -169,8 +169,8 @@ class AppDrawer extends StatelessWidget {
         return 'Panel Principal';
       case 'profile':
         return 'Mi Perfil';
-      case 'assignments':
-        return 'Asignaciones';
+      case 'processes':
+        return 'Procesos';
       case 'logout':
         return 'Cerrar Sesión';
       case 'registro_entrada':

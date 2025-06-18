@@ -137,21 +137,21 @@ class _RegistroSalidaScreenState extends State<RegistroSalidaScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_registroActivoData == null || _registroActivoData!.isEmpty) {
-      return Card(
-        margin: const EdgeInsets.all(16),
+      return const Card(
+        margin: EdgeInsets.all(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(
             children: [
-              const Icon(Icons.info_outline, size: 48, color: Colors.blue),
-              const SizedBox(height: 16),
-              const Text(
+              Icon(Icons.info_outline, size: 48, color: Colors.blue),
+              SizedBox(height: 16),
+              Text(
                 'No hay registro activo de entrada',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
-              const Text(
+              SizedBox(height: 8),
+              Text(
                 'Primero debes registrar una entrada para poder marcar una salida',
                 style: TextStyle(fontSize: 16, color: Colors.grey),
                 textAlign: TextAlign.center,

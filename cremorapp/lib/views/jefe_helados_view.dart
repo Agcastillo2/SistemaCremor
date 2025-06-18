@@ -50,7 +50,7 @@ class JefeHeladosView extends StatelessWidget {
     final drawerItems = insertRegisterItems(baseItems, context, currentUser);
 
     return Scaffold(
-      appBar: AppBarWithSettings(
+      appBar: const AppBarWithSettings(
         title: 'Panel Jefe de Helados',
         titleKey: 'Jefe de Helados',
         elevation: 4,

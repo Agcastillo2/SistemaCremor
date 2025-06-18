@@ -43,7 +43,7 @@ class TrabajadorHeladosView extends StatelessWidget {
     final drawerItems = insertRegisterItems(baseItems, context, currentUser);
 
     return Scaffold(
-      appBar: AppBarWithSettings(
+      appBar: const AppBarWithSettings(
         title: 'Panel Trabajador de Helados',
         titleKey: 'trabajador_helados',
         elevation: 4,

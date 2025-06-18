@@ -103,7 +103,7 @@ class ProfileController {
         return (false, 'Usuario no autenticado');
       }
       final url = Uri.parse(
-        'http://192.168.100.159:8000/personas/${currentUser.id}',
+        'http://192.168.18.8:8001/personas/${currentUser.idPersona}',
       );
       final response = await http.put(
         url,

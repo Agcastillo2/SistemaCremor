@@ -5,7 +5,6 @@ import '../views/registro_salida_screen.dart';
 import '../views/registro_entrada_nata_screen.dart';
 import '../views/registro_salida_nata_screen.dart';
 import '../widgets/app_drawer.dart';
-import 'icons.dart';
 
 List<DrawerItem> getRegisterDrawerItems(
   BuildContext context,

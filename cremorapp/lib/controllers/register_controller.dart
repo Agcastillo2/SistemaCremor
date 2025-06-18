@@ -37,7 +37,7 @@ class RegisterController {
     required String password,
     required int idRol,
   }) async {
-    final url = Uri.parse('http://192.168.100.159:8000/personas/');
+    final url = Uri.parse('http://192.168.18.8:8001/personas/');
     final body = jsonEncode({
       "numero_identificacion": numeroIdentificacion,
       "nombres": nombres,

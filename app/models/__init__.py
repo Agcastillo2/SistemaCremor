@@ -10,7 +10,8 @@ from .puesto import Puesto
 from .registro_entrada_salida import RegistroEntradaSalida, EstadoAsistencia, TipoTurno
 from .reemplazo import Reemplazo, TipoReemplazo, EstadoReemplazo
 from .hora_extra import Hora_Extra, TipoRegistroHoraExtra, TipoPagoDia, EstadoHoraExtra
-from .notificacion import Notificacion, PrioridadNotificacion, EstadoNotificacion, MotivoNotificacion # <-- NUEVO
+from .notificacion import Notificacion, PrioridadNotificacion, EstadoNotificacion, MotivoNotificacion
+from .proceso import Proceso
 
 __all__ = [
     "Base",
@@ -23,5 +24,6 @@ __all__ = [
     "RegistroEntradaSalida", "EstadoAsistencia", "TipoTurno",
     "Reemplazo", "TipoReemplazo", "EstadoReemplazo",
     "Hora_Extra", "TipoRegistroHoraExtra", "TipoPagoDia", "EstadoHoraExtra",
-    "Notificacion", "PrioridadNotificacion", "EstadoNotificacion", "MotivoNotificacion" # <-- NUEVO
+    "Notificacion", "PrioridadNotificacion", "EstadoNotificacion", "MotivoNotificacion",
+    "Proceso"
 ]

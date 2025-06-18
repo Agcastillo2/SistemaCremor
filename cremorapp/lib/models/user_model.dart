@@ -1,5 +1,5 @@
 class UserModel {
-  final int id;
+  final int idPersona; // Agregado idPersona
   final String numeroIdentificacion;
   final String nombres;
   final String apellidos;
@@ -18,7 +18,7 @@ class UserModel {
   final DateTime? vencimientoLicencia;
   final int antiguedadConduccion;
   UserModel({
-    required this.id,
+    required this.idPersona, // Agregado al constructor
     required this.numeroIdentificacion,
     required this.nombres,
     required this.apellidos,
@@ -39,7 +39,7 @@ class UserModel {
   });
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id_persona'],
+      idPersona: json['id_persona'], // Ajustado para usar el campo correcto
       numeroIdentificacion: json['numero_identificacion'],
       nombres: json['nombres'],
       apellidos: json['apellidos'],

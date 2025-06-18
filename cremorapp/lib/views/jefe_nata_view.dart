@@ -11,6 +11,7 @@ import '../utils/icons.dart';
 import '../utils/drawer_items_helper.dart';
 import 'registro_entrada_nata_screen.dart';
 import 'registro_salida_nata_screen.dart';
+import 'procesos_screen.dart';
 
 class JefeNataView extends StatelessWidget {
   const JefeNataView({super.key});
@@ -40,9 +41,9 @@ class JefeNataView extends StatelessWidget {
         route: '/profile',
       ),
       DrawerItem(
-        titleKey: 'assignments',
+        titleKey: 'processes',
         icon: AppIcons.assignments,
-        route: '/assignments',
+        route: '/procesos',
       ),
       DrawerItem(titleKey: 'logout', icon: AppIcons.logout, route: '/login'),
     ];
@@ -50,7 +51,7 @@ class JefeNataView extends StatelessWidget {
     final drawerItems = insertRegisterItems(baseItems, context, currentUser);
 
     return Scaffold(
-      appBar: AppBarWithSettings(
+      appBar: const AppBarWithSettings(
         title: 'Panel Jefe de Nata',
         titleKey: 'Jefe de Nata',
         elevation: 4,
@@ -99,24 +100,6 @@ class JefeNataView extends StatelessWidget {
                 ),
               );
             },
-          ),
-          SpeedDialItem(
-            icon: AppIcons.assignments,
-            label: 'Nuevo Proceso',
-            backgroundColor: Colors.green,
-            onPressed: () {},
-          ),
-          SpeedDialItem(
-            icon: AppIcons.person,
-            label: 'Asignar Personal',
-            backgroundColor: Colors.purple,
-            onPressed: () {},
-          ),
-          SpeedDialItem(
-            icon: AppIcons.milk,
-            label: 'Registro de Producción',
-            backgroundColor: Colors.blue,
-            onPressed: () {},
           ),
         ],
       ),

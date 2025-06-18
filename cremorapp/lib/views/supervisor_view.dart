@@ -4,7 +4,8 @@ import '../controllers/current_user_controller.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/app_bar_with_settings.dart';
 import '../widgets/custom_fab.dart';
-import '../utils/ui_helpers.dart';
+import '../utils/ui_helpers.dart' hide AppIcons;
+import '../utils/icons.dart';
 import 'register_view.dart';
 import 'password_recovery_view.dart';
 
@@ -41,12 +42,19 @@ class SupervisorView extends StatelessWidget {
         titleKey: 'register', // Para registro de usuarios
         icon: AppIcons.manage_users,
         route: '/register',
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const RegisterView()),
+          );
+        },
       ),
       DrawerItem(titleKey: 'logout', icon: AppIcons.logout, route: '/login'),
     ];
 
     return Scaffold(
-      appBar: AppBarWithSettings(
+      appBar: const AppBarWithSettings(
         title: 'Panel Supervisor', // Título por defecto
         titleKey: 'Supervisor', // Clave para traducción
         elevation: 4,
@@ -62,18 +70,22 @@ class SupervisorView extends StatelessWidget {
             label: t.register,
             backgroundColor: Colors.blue,
             onPressed: () {
-              Navigator.of(
+              Navigator.push(
                 context,
-              ).push(MaterialPageRoute(builder: (_) => const RegisterView()));
+                MaterialPageRoute(builder: (context) => const RegisterView()),
+              );
             },
           ),
           SpeedDialItem(
-            icon: AppIcons.password,
+            icon: Icons.password,
             label: t.changePassword,
             backgroundColor: Colors.orange,
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const PasswordRecoveryView()),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PasswordRecoveryView(),
+                ),
               );
             },
           ),
@@ -127,7 +139,7 @@ class SupervisorView extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              isDark ? 'Accesos Rápidos' : 'Quick Access',
+              'Accesos Rápidos',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -141,8 +153,11 @@ class SupervisorView extends StatelessWidget {
               children: [
                 ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const RegisterView()),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RegisterView(),
+                      ),
                     );
                   },
                   icon: const Icon(Icons.person_add),
@@ -156,9 +171,10 @@ class SupervisorView extends StatelessWidget {
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.of(context).push(
+                    Navigator.push(
+                      context,
                       MaterialPageRoute(
-                        builder: (_) => const PasswordRecoveryView(),
+                        builder: (context) => const PasswordRecoveryView(),
                       ),
                     );
                   },

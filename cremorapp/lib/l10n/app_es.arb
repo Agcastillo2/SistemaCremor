@@ -65,10 +65,10 @@
                 "type": "String"
             }
         }
-    },
-    "supervisorPanel": "Panel de Supervisor",
+    },    "supervisorPanel": "Panel de Supervisor",
     "creamManager": "Panel Jefe de Nata",
     "iceCreamManager": "Panel Jefe de Helados",
     "creamWorker": "Panel Trabajador de Nata",
-    "iceCreamWorker": "Panel Trabajador de Helados"
+    "iceCreamWorker": "Panel Trabajador de Helados",
+    "companyName": "INPSEG"
 }

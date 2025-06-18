@@ -1,0 +1,6 @@
+projectKey=CremorSistema
+serverUrl=http://localhost:9000
+serverVersion=25.1.0.102122
+dashboardUrl=http://localhost:9000/dashboard?id=CremorSistema
+ceTaskId=270cf66a-5b61-4af4-bcdf-3b01cac8df4d
+ceTaskUrl=http://localhost:9000/api/ce/task?id=270cf66a-5b61-4af4-bcdf-3b01cac8df4d

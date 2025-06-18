@@ -9,7 +9,8 @@ from .puesto import router as puesto_router
 from .registro_entrada_salida import router as registro_es_router
 from .reemplazo import router as reemplazo_router
 from .hora_extra import router as hora_extra_router
-from .notificacion import router as notificacion_router # <-- NUEVO
+from .notificacion import router as notificacion_router
+from .proceso import router as proceso_router
 
 __all__ = [
     "persona_router", 
@@ -21,5 +22,6 @@ __all__ = [
     "registro_es_router",
     "reemplazo_router",
     "hora_extra_router",
-    "notificacion_router" # <-- NUEVO
+    "notificacion_router",
+    "proceso_router"
 ]
