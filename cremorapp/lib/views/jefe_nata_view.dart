@@ -6,7 +6,11 @@ import '../widgets/app_bar_with_settings.dart';
 import '../widgets/info_card.dart';
 import '../widgets/list_card.dart';
 import '../widgets/custom_fab.dart';
-import '../utils/ui_helpers.dart';
+import '../utils/ui_helpers.dart' hide AppIcons;
+import '../utils/icons.dart';
+import '../utils/drawer_items_helper.dart';
+import 'registro_entrada_nata_screen.dart';
+import 'registro_salida_nata_screen.dart';
 
 class JefeNataView extends StatelessWidget {
   const JefeNataView({super.key});
@@ -15,18 +19,16 @@ class JefeNataView extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUser = CurrentUserController.currentUser;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final t = AppLocalizations.of(context)!; // Obtener las traducciones
+    final t = AppLocalizations.of(context)!;
 
     if (currentUser == null) {
-      // If no user is logged in, redirect to login
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacementNamed('/login');
       });
       return const SizedBox.shrink();
     }
 
-    final drawerItems = [
+    final baseItems = [
       DrawerItem(
         titleKey: 'dashboard',
         icon: AppIcons.home,
@@ -45,11 +47,12 @@ class JefeNataView extends StatelessWidget {
       DrawerItem(titleKey: 'logout', icon: AppIcons.logout, route: '/login'),
     ];
 
-    // Usamos isDark en la construcción de la UI
+    final drawerItems = insertRegisterItems(baseItems, context, currentUser);
+
     return Scaffold(
       appBar: AppBarWithSettings(
-        title: 'Panel Jefe de Nata', // Título por defecto
-        titleKey: 'Jefe de Nata', // Clave para traducción
+        title: 'Panel Jefe de Nata',
+        titleKey: 'Jefe de Nata',
         elevation: 4,
       ),
       drawer: AppDrawer(currentRoute: '/jefe-nata', items: drawerItems),
@@ -58,6 +61,45 @@ class JefeNataView extends StatelessWidget {
         mainIcon: Icons.add,
         tooltip: t.settings,
         actions: [
+          SpeedDialItem(
+            icon: Icons.login,
+            label: 'Registrar Entrada',
+            backgroundColor: Colors.green,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => RegistroEntradaNataScreen(
+                        idPersona: currentUser.idPersona,
+                        nombres: currentUser.nombres,
+                        apellidos: currentUser.apellidos,
+                        rol: 'Jefe de Nata',
+                        idRol: currentUser.idRol,
+                      ),
+                ),
+              );
+            },
+          ),
+          SpeedDialItem(
+            icon: Icons.logout,
+            label: 'Registrar Salida',
+            backgroundColor: Colors.red,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => RegistroSalidaNataScreen(
+                        idPersona: currentUser.idPersona,
+                        nombres: currentUser.nombres,
+                        apellidos: currentUser.apellidos,
+                        rol: 'Jefe de Nata',
+                      ),
+                ),
+              );
+            },
+          ),
           SpeedDialItem(
             icon: AppIcons.assignments,
             label: 'Nuevo Proceso',
@@ -83,7 +125,6 @@ class JefeNataView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header y saludo
             Text(
               'Bienvenido, ${currentUser.nombres}',
               style: const TextStyle(
@@ -103,7 +144,6 @@ class JefeNataView extends StatelessWidget {
             ),
             UIHelpers.vSpaceLarge,
 
-            // Tarjetas con métricas
             Row(
               children: [
                 Expanded(
@@ -140,6 +180,8 @@ class JefeNataView extends StatelessWidget {
                     value: '8',
                     icon: AppIcons.person,
                     color: Colors.purple,
+                    showTrend: true,
+                    trendValue: -1,
                     onTap: () {},
                   ),
                 ),
@@ -159,7 +201,6 @@ class JefeNataView extends StatelessWidget {
             ),
             UIHelpers.vSpaceLarge,
 
-            // Lista de actividad reciente
             ListCard(
               title: 'Actividad Reciente',
               items: [
@@ -201,101 +242,7 @@ class JefeNataView extends StatelessWidget {
               shrinkWrap: true,
             ),
             UIHelpers.vSpaceLarge,
-
-            // Accesos rápidos
-            const Text(
-              'Accesos Rápidos',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            UIHelpers.vSpaceMedium,
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              children: [
-                _buildFeatureCard(
-                  context,
-                  'Registro de Procesos',
-                  AppIcons.assignments,
-                  () {},
-                ),
-                _buildFeatureCard(
-                  context,
-                  'Asignaciones',
-                  AppIcons.calendar,
-                  () {},
-                ),
-                _buildFeatureCard(context, 'Inventario', AppIcons.milk, () {}),
-                _buildFeatureCard(
-                  context,
-                  'Reportes',
-                  Icons.bar_chart_rounded,
-                  () {},
-                ),
-              ],
-            ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeatureCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    VoidCallback onTap,
-  ) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(UIHelpers.borderRadiusLarge),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(UIHelpers.borderRadiusLarge),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(UIHelpers.borderRadiusLarge),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors:
-                  isDark
-                      ? [Colors.grey[800]!, Colors.grey[700]!]
-                      : [
-                        theme.colorScheme.primary.withOpacity(0.7),
-                        theme.colorScheme.primary,
-                      ],
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 48, color: Colors.white),
-              UIHelpers.vSpaceMedium,
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

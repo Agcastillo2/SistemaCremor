@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../utils/ui_helpers.dart';
 import '../controllers/current_user_controller.dart';
 import '../views/profile_view.dart';
 import 'settings_buttons.dart';
+import '../models/user_model.dart';
+
+class DrawerItem {
+  final String titleKey;
+  final IconData icon;
+  final String route;
+  final Color? iconColor;
+  final VoidCallback? onTap;
+
+  DrawerItem({
+    required this.titleKey,
+    required this.icon,
+    required this.route,
+    this.iconColor,
+    this.onTap,
+  });
+}
 
 class AppDrawer extends StatelessWidget {
   final String currentRoute;
@@ -11,6 +27,24 @@ class AppDrawer extends StatelessWidget {
 
   const AppDrawer({Key? key, required this.currentRoute, required this.items})
     : super(key: key);
+
+  List<DrawerItem> _getDrawerItems(
+    BuildContext context,
+    UserModel? currentUser,
+  ) {
+    if (currentUser == null) return [];
+
+    final isNataRole = currentUser.rol.contains('Nata');
+    final baseItems = List<DrawerItem>.from(items);
+
+    // Encontrar el índice después de "Mi Perfil"
+    final profileIndex = baseItems.indexWhere(
+      (item) => item.titleKey == 'profile',
+    );
+    if (profileIndex == -1) return baseItems;
+
+    return baseItems;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +60,11 @@ class AppDrawer extends StatelessWidget {
         child: Column(
           children: [
             UserAccountsDrawerHeader(
-              margin: EdgeInsets.zero,
               decoration: BoxDecoration(color: theme.colorScheme.primary),
+              margin: EdgeInsets.zero,
               currentAccountPicture: GestureDetector(
                 onTap: () {
-                  Navigator.pop(context); // Cerrar el drawer
+                  Navigator.pop(context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -38,148 +72,90 @@ class AppDrawer extends StatelessWidget {
                     ),
                   );
                 },
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
+                child: CircleAvatar(
+                  backgroundColor: Colors.white,
+                  radius: 25,
+                  child: Text(
+                    currentUser != null
+                        ? '${currentUser.nombres[0]}${currentUser.apellidos[0]}'
+                        : '',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
-                  child:
-                      currentUser != null
-                          ? Center(
-                            child: Text(
-                              currentUser.nombres[0] + currentUser.apellidos[0],
-                              style: TextStyle(
-                                fontSize: 18, // Tamaño más pequeño
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                          )
-                          : Icon(
-                            AppIcons.person,
-                            color: theme.colorScheme.primary,
-                            size: 24, // Tamaño más pequeño
-                          ),
                 ),
               ),
-              accountName:
-                  currentUser != null
-                      ? Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          currentUser.nombreCompleto,
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      )
-                      : const Text(
-                        'CREMOR',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-              accountEmail:
-                  currentUser != null
-                      ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'CI: ${currentUser.numeroIdentificacion}',
-                            style: const TextStyle(fontSize: 12),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            currentUser.rol,
-                            style: const TextStyle(fontSize: 12),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      )
-                      : Text(t.appName, style: const TextStyle(fontSize: 14)),
+              accountName: Text(
+                currentUser != null
+                    ? '${currentUser.nombres} ${currentUser.apellidos}'
+                    : '',
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              accountEmail: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'CI: ${currentUser?.numeroIdentificacion ?? ''}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  Text(
+                    currentUser?.rol ?? '',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
             ),
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
                 children:
-                    items.map((item) {
+                    _getDrawerItems(context, currentUser).map((item) {
                       final bool isSelected = currentRoute == item.route;
-
-                      // Obtener el texto traducido según la clave
-                      String translatedTitle = _getTranslatedTitle(
-                        t,
-                        item.titleKey,
-                      );
-
                       return ListTile(
                         leading: Icon(
                           item.icon,
-                          color: isSelected ? theme.colorScheme.primary : null,
+                          color: item.iconColor ?? theme.iconTheme.color,
                         ),
                         title: Text(
-                          translatedTitle, // Usar el texto traducido
+                          _getTitle(t, item.titleKey),
                           style: TextStyle(
+                            color:
+                                isSelected
+                                    ? theme.colorScheme.primary
+                                    : theme.textTheme.bodyLarge?.color,
                             fontWeight:
                                 isSelected
                                     ? FontWeight.bold
                                     : FontWeight.normal,
-                            color:
-                                isSelected ? theme.colorScheme.primary : null,
                           ),
                         ),
                         selected: isSelected,
-                        selectedTileColor: theme.colorScheme.primary
-                            .withOpacity(0.1),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            UIHelpers.borderRadiusSmall,
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context); // Cerrar el drawer
-                          if (currentRoute != item.route) {
-                            if (item.route == '/profile') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const ProfileView(),
-                                ),
-                              );
-                            } else {
+                        onTap:
+                            item.onTap ??
+                            () {
+                              Navigator.pop(context);
+                              if (item.route == '/login') {
+                                CurrentUserController.clearCurrentUser();
+                              }
                               Navigator.pushReplacementNamed(
                                 context,
                                 item.route,
                               );
-                            }
-                          }
-                        },
+                            },
                       );
                     }).toList(),
               ),
             ),
             const Divider(),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 8.0,
-                  horizontal: 16.0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [Text(t.settings), const SettingsButtons()],
-                ),
-              ),
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: SettingsButtons(axis: Axis.horizontal),
             ),
           ],
         ),
@@ -187,37 +163,24 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  // Método para obtener el texto traducido según la clave
-  String _getTranslatedTitle(AppLocalizations t, String titleKey) {
+  String _getTitle(AppLocalizations t, String titleKey) {
     switch (titleKey) {
       case 'dashboard':
-        return t.dashboard;
+        return 'Panel Principal';
       case 'profile':
-        return t.profile;
-      case 'vehicles':
-        return t.vehicles;
+        return 'Mi Perfil';
       case 'assignments':
-        return t.assignments;
+        return 'Asignaciones';
       case 'logout':
-        return t.logout;
-      case 'milk':
-        return t.milk;
+        return 'Cerrar Sesión';
+      case 'registro_entrada':
+        return 'Registrar Entrada';
+      case 'registro_salida':
+        return 'Registrar Salida';
       case 'register':
-        return t.register;
+        return 'Registrar Usuario';
       default:
-        return titleKey; // Si no hay traducción, usar la clave como texto
+        return titleKey;
     }
   }
-}
-
-class DrawerItem {
-  final String titleKey; // Clave para la traducción
-  final IconData icon;
-  final String route;
-
-  const DrawerItem({
-    required this.titleKey,
-    required this.icon,
-    required this.route,
-  });
 }
