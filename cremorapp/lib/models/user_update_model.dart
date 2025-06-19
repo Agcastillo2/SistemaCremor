@@ -39,7 +39,6 @@ class UserUpdateModel {
     this.currentPassword,
     this.newPassword,
   });
-
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {
       'numero_identificacion': numeroIdentificacion,
@@ -48,10 +47,7 @@ class UserUpdateModel {
       'telefono': telefono,
       'correo': correo,
       'direccion': direccion,
-      'fecha_nacimiento':
-          fechaNacimiento.toIso8601String().split(
-            'T',
-          )[0], // Siempre enviado en formato YYYY-MM-DD
+      'fecha_nacimiento': fechaNacimiento.toIso8601String().split('T')[0],
       'genero': genero,
       'disponibilidad': disponibilidad,
       'estado_civil': estadoCivil,
@@ -61,19 +57,17 @@ class UserUpdateModel {
           vencimientoLicencia?.toIso8601String().split('T')[0],
       'numero_hijos': numeroHijos,
       'antiguedad_conduccion': antiguedadConduccion,
-      'id_rol': idRol, // Asegurarse de enviar el id_rol
-    };
-
-    // Manejo de contraseña
-    if (newPassword != null && newPassword!.isNotEmpty) {
-      data['password'] = newPassword;
-    } else if (currentPassword != null && currentPassword!.isNotEmpty) {
-      data['password'] = currentPassword;
-    } else {
-      data['password'] = '12345678'; // Valor por defecto
+      'id_rol': idRol,
+    }; // Manejo de contraseña
+    if (currentPassword != null &&
+        currentPassword!.isNotEmpty &&
+        newPassword != null &&
+        newPassword!.isNotEmpty) {
+      data['current_password'] = currentPassword;
+      data['new_password'] = newPassword;
     }
 
-    // Elimina solo vencimiento_licencia si es null para evitar errores de parsing
+    // Elimina campos nulos para evitar errores de parsing
     if (data['vencimiento_licencia'] == null) {
       data.remove('vencimiento_licencia');
     }

@@ -19,7 +19,7 @@ class RolModel {
 
   static String _obtenerDescripcion(String nombreRol) {
     final descripciones = {
-      'JEFE_NATA': 'Jefe de Nata',
+      'JEFE_NATA': 'Jefe Nata',
       'JEFE_HELADOS': 'Jefe de Helados',
       'TRABAJADOR_NATA': 'Trabajador de Nata',
       'TRABAJADOR_HELADOS': 'Trabajador de Helados',

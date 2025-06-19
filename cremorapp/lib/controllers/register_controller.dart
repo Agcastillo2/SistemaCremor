@@ -5,17 +5,25 @@ import '../utils/validators.dart';
 class RegisterController {
   String? validateIdentificacion(String? value) =>
       Validators.validateIdentificacion(value);
+
   String? validateNombres(String? value) => Validators.validateNombres(value);
+
   String? validateApellidos(String? value) =>
       Validators.validateApellidos(value);
-  String? validateFechaNacimiento(String? value) =>
+
+  ValidationResult validateFechaNacimiento(String? value) =>
       Validators.validateFechaNacimiento(value);
+
   String? validateNumeroHijos(String? value) =>
       Validators.validateNumeroHijos(value);
+
   String? validateDireccion(String? value) =>
       Validators.validateDireccion(value);
+
   String? validateTelefono(String? value) => Validators.validateTelefono(value);
+
   String? validateCorreo(String? value) => Validators.validateCorreo(value);
+
   String? validatePassword(String? value) => Validators.validatePassword(value);
 
   Future<String?> registerUser({

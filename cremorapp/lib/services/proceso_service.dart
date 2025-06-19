@@ -33,6 +33,7 @@ class ProcesoService {
 
   static Future<Map<String, dynamic>> finalizarProceso({
     required int idProceso,
+    required int idPersona,
     required double produccionKg,
     double? lecheSobrante,
   }) async {
@@ -43,6 +44,7 @@ class ProcesoService {
         body: jsonEncode({
           'estado': 'Finalizado',
           'produccion_kg': produccionKg,
+          'id_persona': idPersona,
           if (lecheSobrante != null) 'leche_sobrante': lecheSobrante,
         }),
       );
@@ -90,6 +92,42 @@ class ProcesoService {
         return data.map((item) => item as Map<String, dynamic>).toList();
       } else {
         throw Exception('Error al listar procesos: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>> obtenerProcesos(int pagina) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/procesos/?page=$pagina'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Error al obtener procesos: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
+  static Future<bool> validarOrdenProcesos(int procesoX, int procesoY) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/procesos/validar-orden'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'proceso_x': procesoX, 'proceso_y': procesoY}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['valido'] ?? false;
+      } else {
+        throw Exception('Error al validar orden: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');

@@ -1,3 +1,15 @@
+class ValidationResult {
+  final String? error;
+  final bool needsConfirmation;
+  final String? confirmationMessage;
+
+  ValidationResult({
+    this.error,
+    this.needsConfirmation = false,
+    this.confirmationMessage,
+  });
+}
+
 class Validators {
   static String? validateUsername(String? value) {
     if (value == null || value.isEmpty) return 'Ingrese su usuario';
@@ -27,14 +39,95 @@ class Validators {
     return null;
   }
 
+  static String? validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Ingrese nombre';
+    }
+    if (!RegExp(r"^[A-Za-zÀ-ÿ\s]+$").hasMatch(value)) {
+      return 'El nombre solo puede contener letras';
+    }
+    return null;
+  }
+
+  static String? validateSurname(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Ingrese apellido';
+    }
+    if (!RegExp(r"^[A-Za-zÀ-ÿ\s]+$").hasMatch(value)) {
+      return 'El apellido solo puede contener letras';
+    }
+    return null;
+  }
+
   static String? validateNombres(String? value) {
-    if (value == null || value.isEmpty) return 'Ingrese los nombres';
+    if (value == null || value.isEmpty) {
+      return 'Por favor ingrese sus nombres';
+    }
+    if (!RegExp(r'^[A-Za-zÀ-ÿ\s]+$').hasMatch(value)) {
+      return 'Los nombres solo pueden contener letras';
+    }
     return null;
   }
 
   static String? validateApellidos(String? value) {
-    if (value == null || value.isEmpty) return 'Ingrese los apellidos';
+    if (value == null || value.isEmpty) {
+      return 'Por favor ingrese sus apellidos';
+    }
+    if (!RegExp(r'^[A-Za-zÀ-ÿ\s]+$').hasMatch(value)) {
+      return 'Los apellidos solo pueden contener letras';
+    }
     return null;
+  }
+
+  static String? validateAge(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Ingrese edad';
+    }
+    final age = int.tryParse(value);
+    if (age == null) {
+      return 'Edad inválida';
+    }
+    if (age < 16) {
+      return 'Debe tener al menos 16 años';
+    }
+    // Note: ages 16-17 require parental confirmation handled in controller
+    return null;
+  }
+
+  static ValidationResult validateFechaNacimiento(String? value) {
+    if (value == null || value.isEmpty) {
+      return ValidationResult(error: 'Seleccione la fecha de nacimiento');
+    }
+
+    try {
+      final fecha = DateTime.parse(value);
+      final now = DateTime.now();
+      final age =
+          now.year -
+          fecha.year -
+          ((now.month > fecha.month ||
+                  (now.month == fecha.month && now.day >= fecha.day))
+              ? 0
+              : 1);
+
+      if (age < 16) {
+        return ValidationResult(
+          error: 'No se puede registrar a una persona menor de 16 años',
+        );
+      }
+
+      if (age < 18) {
+        return ValidationResult(
+          needsConfirmation: true,
+          confirmationMessage:
+              'La persona es menor de edad (entre 16 y 18 años). ¿Desea continuar con el registro?',
+        );
+      }
+
+      return ValidationResult(); // Sin error y sin necesidad de confirmación
+    } catch (e) {
+      return ValidationResult(error: 'Fecha de nacimiento inválida');
+    }
   }
 
   static String? validateNumeroHijos(String? value) {
@@ -61,16 +154,6 @@ class Validators {
     if (value == null || value.isEmpty) return 'Ingrese el correo electrónico';
     final regex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!regex.hasMatch(value)) return 'Correo electrónico inválido';
-    return null;
-  }
-
-  static String? validateFechaNacimiento(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Seleccione la fecha de nacimiento';
-    }
-    // Validación simple de formato YYYY-MM-DD
-    final regex = RegExp(r'^\d{4}-\d{2}-\d{2}?$');
-    if (!regex.hasMatch(value)) return 'Formato de fecha inválido (YYYY-MM-DD)';
     return null;
   }
 }

@@ -335,9 +335,29 @@ class _ProcesosScreenState extends State<ProcesosScreen> {
       return;
     }
 
+    // Verificar si el usuario actual es el creador del proceso
+    final currentUser = CurrentUserController.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No hay usuario autenticado')),
+      );
+      return;
+    }
+
+    if (ultimoProceso!['id_persona'] != currentUser.idPersona) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Solo el jefe que inició el proceso puede finalizarlo'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     try {
       await ProcesoService.finalizarProceso(
         idProceso: ultimoProceso!['id_proceso'],
+        idPersona: currentUser.idPersona,
         produccionKg: produccionKg,
         lecheSobrante: lecheSobrante,
       );
@@ -775,10 +795,20 @@ class _ProcesosScreenState extends State<ProcesosScreen> {
     return true;
   }
 
+  bool _puedeFinalizarProceso() {
+    if (ultimoProceso == null || !procesosCongelados) return false;
+    final currentUser = CurrentUserController.currentUser;
+    if (currentUser == null) return false;
+    return ultimoProceso!['id_persona'] == currentUser.idPersona;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBarWithSettings(context, 'Procesos'),
+      appBar: AppBar(
+        title: const Text('Procesos'),
+        backgroundColor: Theme.of(context).primaryColor,
+      ),
       drawer: AppDrawer(items: drawerItems, currentRoute: '/procesos'),
       body:
           isLoading
@@ -840,9 +870,7 @@ class _ProcesosScreenState extends State<ProcesosScreen> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed:
-                                ultimoProceso != null &&
-                                        ultimoProceso!['estado'] ==
-                                            'En progreso'
+                                _puedeFinalizarProceso()
                                     ? _mostrarDialogoFinalizarProceso
                                     : null,
                             style: ElevatedButton.styleFrom(

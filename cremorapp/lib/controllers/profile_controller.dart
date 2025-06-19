@@ -13,9 +13,21 @@ class ProfileController {
     if (value == null || value.isEmpty) {
       return 'El nombre es requerido';
     }
+
+    // Validar que no contenga números
+    if (RegExp(r'\d').hasMatch(value)) {
+      return 'El nombre no puede contener números';
+    }
+
+    // Validar que solo contenga letras, espacios y tildes
+    if (!RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$').hasMatch(value)) {
+      return 'El nombre solo puede contener letras';
+    }
+
     if (value.length < 2) {
       return 'El nombre debe tener al menos 2 caracteres';
     }
+
     return null;
   }
 
@@ -23,9 +35,21 @@ class ProfileController {
     if (value == null || value.isEmpty) {
       return 'Los apellidos son requeridos';
     }
+
+    // Validar que no contenga números
+    if (RegExp(r'\d').hasMatch(value)) {
+      return 'Los apellidos no pueden contener números';
+    }
+
+    // Validar que solo contenga letras, espacios y tildes
+    if (!RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$').hasMatch(value)) {
+      return 'Los apellidos solo pueden contener letras';
+    }
+
     if (value.length < 2) {
       return 'Los apellidos deben tener al menos 2 caracteres';
     }
+
     return null;
   }
 
@@ -35,6 +59,9 @@ class ProfileController {
     }
     if (value.length != 10) {
       return 'El teléfono debe tener 10 dígitos';
+    }
+    if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+      return 'El teléfono solo debe contener números';
     }
     return null;
   }
@@ -90,12 +117,11 @@ class ProfileController {
     return null;
   }
 
-  // Nuevos validadores
-  String? validateFechaNacimiento(String? value) =>
+  ValidationResult validateFechaNacimiento(String? value) =>
       Validators.validateFechaNacimiento(value);
+
   String? validateNumeroHijos(String? value) =>
       Validators.validateNumeroHijos(value);
-
   Future<(bool, String?)> updateProfile(UserUpdateModel userData) async {
     try {
       final currentUser = CurrentUserController.currentUser;
@@ -105,6 +131,7 @@ class ProfileController {
       final url = Uri.parse(
         'http://192.168.18.8:8001/personas/${currentUser.idPersona}',
       );
+
       final response = await http.put(
         url,
         headers: {"Content-Type": "application/json"},
@@ -117,9 +144,17 @@ class ProfileController {
         CurrentUserController.setCurrentUser(updatedUser);
         return (true, null);
       } else {
-        final data = jsonDecode(response.body);
-        if (data is Map && data.containsKey('detail')) {
-          return (false, data['detail'].toString());
+        Map<String, dynamic> data;
+        try {
+          data = jsonDecode(response.body);
+          if (data.containsKey('detail')) {
+            if (data['detail'] == 'La contraseña actual es incorrecta') {
+              return (false, 'La contraseña actual es incorrecta');
+            }
+            return (false, data['detail'].toString());
+          }
+        } catch (e) {
+          // JSON decode error
         }
         return (false, 'Error al actualizar el perfil');
       }

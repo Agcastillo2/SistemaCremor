@@ -177,18 +177,6 @@ class _LoginViewState extends State<LoginView> {
                             icon: AppIcons.login,
                           ),
                           UIHelpers.vSpaceMedium,
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pushNamed('/register');
-                            },
-                            child: Text(
-                              'Crear una cuenta',
-                              style: TextStyle(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),

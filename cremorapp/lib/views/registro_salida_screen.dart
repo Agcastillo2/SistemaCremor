@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/asistencia_service.dart';
+import '../widgets/app_drawer.dart';
+import '../utils/icons.dart';
+import '../utils/drawer_items_helper.dart';
+import '../controllers/current_user_controller.dart';
 
 class RegistroSalidaScreen extends StatefulWidget {
   final int idPersona;
@@ -232,11 +236,100 @@ class _RegistroSalidaScreenState extends State<RegistroSalidaScreen> {
     );
   }
 
+  Widget _buildHistorialList() {
+    if (_isLoadingHistorial) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_historialRegistros.isEmpty) {
+      return const Center(child: Text('No hay registros de asistencia'));
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _historialRegistros.length,
+      itemBuilder: (context, index) {
+        final registro = _historialRegistros[index];
+        final entrada = DateTime.parse(registro['fecha_hora_entrada']);
+        final salida =
+            registro['fecha_hora_salida'] != null
+                ? DateTime.parse(registro['fecha_hora_salida'])
+                : null;
+
+        // Calcular tiempo trabajado
+        String tiempoTrabajado = '';
+        if (salida != null) {
+          final diferencia = salida.difference(entrada);
+          final horas = diferencia.inHours;
+          final minutos = diferencia.inMinutes.remainder(60);
+          tiempoTrabajado = '$horas horas y $minutos minutos';
+        }
+
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          child: ListTile(
+            title: Text('Puesto: ${registro['puesto']['descripcion']}'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Entrada: ${DateFormat('dd/MM/yyyy HH:mm:ss').format(entrada)}',
+                ),
+                if (salida != null) ...[
+                  Text(
+                    'Salida: ${DateFormat('dd/MM/yyyy HH:mm:ss').format(salida)}',
+                  ),
+                  Text(
+                    'Tiempo trabajado: $tiempoTrabajado',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ] else
+                  const Text(
+                    'Salida: Pendiente',
+                    style: TextStyle(color: Colors.orange),
+                  ),
+                Text('Turno: ${registro['turno']}'),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Lista de items base para el drawer
+  List<DrawerItem> get baseItems => [
+    DrawerItem(
+      titleKey: 'dashboard',
+      icon: AppIcons.home,
+      route: widget.rol.contains('NATA') ? '/jefe-nata' : '/jefe-helados',
+    ),
+    DrawerItem(titleKey: 'profile', icon: AppIcons.profile, route: '/profile'),
+    DrawerItem(
+      titleKey: 'processes',
+      icon: AppIcons.assignments,
+      route: '/procesos',
+    ),
+    DrawerItem(titleKey: 'logout', icon: AppIcons.logout, route: '/login'),
+  ];
+
+  // Lista completa de items para el drawer
+  List<DrawerItem> get drawerItems => insertRegisterItems(
+    baseItems,
+    context,
+    CurrentUserController.currentUser!,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: AppDrawer(currentRoute: '/registro-salida', items: drawerItems),
       appBar: AppBar(
-        title: const Text('Registro de Salida - Helados'),
+        title: const Text('Registro de Salida'),
         backgroundColor: Theme.of(context).primaryColor,
       ),
       body: RefreshIndicator(
@@ -338,56 +431,7 @@ class _RegistroSalidaScreenState extends State<RegistroSalidaScreen> {
                 ),
 
                 // Lista de Historial
-                if (_isLoadingHistorial)
-                  const Center(child: CircularProgressIndicator())
-                else if (_historialRegistros.isEmpty)
-                  const Center(child: Text('No hay registros de asistencia'))
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _historialRegistros.length,
-                    itemBuilder: (context, index) {
-                      final registro = _historialRegistros[index];
-                      final entrada = DateTime.parse(
-                        registro['fecha_hora_entrada'],
-                      );
-                      final salida =
-                          registro['fecha_hora_salida'] != null
-                              ? DateTime.parse(registro['fecha_hora_salida'])
-                              : null;
-
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                          vertical: 4,
-                          horizontal: 8,
-                        ),
-                        child: ListTile(
-                          title: Text(
-                            'Puesto: ${registro['puesto']['descripcion']}',
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Entrada: ${DateFormat('dd/MM/yyyy HH:mm:ss').format(entrada)}',
-                              ),
-                              if (salida != null)
-                                Text(
-                                  'Salida: ${DateFormat('dd/MM/yyyy HH:mm:ss').format(salida)}',
-                                )
-                              else
-                                const Text(
-                                  'Salida: Pendiente',
-                                  style: TextStyle(color: Colors.orange),
-                                ),
-                              Text('Turno: ${registro['turno']}'),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                _buildHistorialList(),
               ],
             ),
           ),

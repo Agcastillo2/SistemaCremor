@@ -5,6 +5,12 @@ import '../controllers/current_user_controller.dart';
 import '../models/user_update_model.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
+import '../widgets/app_drawer.dart';
+import '../utils/icons.dart';
+import '../utils/validators.dart';
+import '../utils/drawer_items_helper.dart';
+import 'register_view.dart';
+import 'change_password_view.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -18,7 +24,6 @@ class _ProfileViewState extends State<ProfileView> {
   final _controller = ProfileController();
   bool _isLoading = false;
   String? _errorMessage;
-  bool _showPasswordFields = false;
   late TextEditingController _identificacionController;
   late TextEditingController _nombresController;
   late TextEditingController _apellidosController;
@@ -27,13 +32,55 @@ class _ProfileViewState extends State<ProfileView> {
   late TextEditingController _direccionController;
   late TextEditingController _fechaNacimientoController;
   late TextEditingController _numeroHijosController;
-  final _currentPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
 
-  bool _obscureCurrentPassword = true;
-  bool _obscureNewPassword = true;
-  bool _obscureConfirmPassword = true;
+  Future<bool> _validateAndShowAgeDialog(DateTime date) async {
+    final validationResult = Validators.validateFechaNacimiento(
+      date.toIso8601String(),
+    );
+
+    if (validationResult.error != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(validationResult.error!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return false;
+    }
+
+    if (validationResult.needsConfirmation) {
+      if (!mounted) return false;
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Advertencia de Edad'),
+            content: Text(
+              validationResult.confirmationMessage ??
+                  'La persona es menor de edad. ¿Desea continuar?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Continuar'),
+              ),
+            ],
+          );
+        },
+      );
+
+      return confirmed ?? false;
+    }
+
+    return true;
+  }
 
   @override
   void initState() {
@@ -65,74 +112,250 @@ class _ProfileViewState extends State<ProfileView> {
     _direccionController.dispose();
     _fechaNacimientoController.dispose();
     _numeroHijosController.dispose();
-    _currentPasswordController.dispose();
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
+  // Campo Fecha Nacimiento builder
+  Widget _buildFechaNacimientoField() {
+    return CustomTextField(
+      controller: _fechaNacimientoController,
+      label: 'Fecha de Nacimiento',
+      readOnly: true,
+      icon: Icons.calendar_today,
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate:
+              DateTime.tryParse(_fechaNacimientoController.text) ??
+              DateTime.now().subtract(const Duration(days: 365 * 18)),
+          firstDate: DateTime(1900),
+          lastDate: DateTime.now(),
+        );
+        if (picked != null) {
+          final validationResult = Validators.validateFechaNacimiento(
+            picked.toIso8601String(),
+          );
+          if (validationResult.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(validationResult.error!),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+          if (validationResult.needsConfirmation) {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder:
+                  (_) => AlertDialog(
+                    title: const Text('Advertencia de Edad'),
+                    content: Text(
+                      validationResult.confirmationMessage ??
+                          'La persona es menor de edad. ¿Desea continuar?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancelar'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Continuar'),
+                      ),
+                    ],
+                  ),
+            );
+            if (confirmed != true) return;
+          }
+          setState(
+            () =>
+                _fechaNacimientoController.text =
+                    picked.toIso8601String().split('T')[0],
+          );
+        }
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty)
+          return 'La fecha de nacimiento es requerida';
+        final result = Validators.validateFechaNacimiento(value);
+        return result.error;
+      },
+    );
+  }
+
   Future<void> _submit() async {
+    // Validate fecha nacimiento first
+    final fechaNacimiento = _fechaNacimientoController.text;
+    final ageValidation = Validators.validateFechaNacimiento(fechaNacimiento);
+
+    if (ageValidation.error != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(ageValidation.error!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (ageValidation.needsConfirmation) {
+      if (!mounted) return;
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Advertencia de Edad'),
+            content: Text(
+              ageValidation.confirmationMessage ??
+                  'La persona es menor de edad. ¿Desea continuar?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Continuar'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmed != true) {
+        return;
+      }
+    }
+
     if (_formKey.currentState?.validate() ?? false) {
       setState(() {
         _isLoading = true;
         _errorMessage = null;
       });
 
-      final currentUser = CurrentUserController.currentUser!;
-
-      final userData = UserUpdateModel(
-        numeroIdentificacion: _identificacionController.text,
-        nombres: _nombresController.text,
-        apellidos: _apellidosController.text,
-        telefono: _telefonoController.text,
-        correo: _correoController.text,
-        direccion: _direccionController.text,
-        fechaNacimiento: DateTime.parse(_fechaNacimientoController.text),
-        genero: currentUser.genero,
-        disponibilidad: currentUser.disponibilidad,
-        estadoCivil: currentUser.estadoCivil,
-        tipoSangre: 'A+', // Usar el tipo de sangre del perfil actual
-        tipoLicencia: 'NINGUNA', // Usar el tipo de licencia del perfil actual
-        numeroHijos: int.parse(_numeroHijosController.text),
-        antiguedadConduccion: 0, // Usar el valor del perfil actual
-        idRol: currentUser.idRol, // Mantener el mismo rol
-        currentPassword:
-            _currentPasswordController.text.isEmpty
-                ? null
-                : _currentPasswordController.text,
-        newPassword:
-            _newPasswordController.text.isEmpty
-                ? null
-                : _newPasswordController.text,
-      );
-
-      final (success, error) = await _controller.updateProfile(userData);
-
-      setState(() {
-        _isLoading = false;
-        _errorMessage = error;
-      });
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Perfil actualizado correctamente'),
-            duration: Duration(seconds: 2),
-          ),
+      try {
+        final currentUser = CurrentUserController.currentUser!;
+        final userData = UserUpdateModel(
+          numeroIdentificacion: _identificacionController.text,
+          nombres: _nombresController.text,
+          apellidos: _apellidosController.text,
+          telefono: _telefonoController.text,
+          correo: _correoController.text,
+          direccion: _direccionController.text,
+          fechaNacimiento: DateTime.parse(_fechaNacimientoController.text),
+          genero: currentUser.genero,
+          disponibilidad: currentUser.disponibilidad,
+          estadoCivil: currentUser.estadoCivil,
+          tipoSangre: currentUser.tipoSangre,
+          tipoLicencia: currentUser.tipoLicencia,
+          numeroHijos: int.parse(_numeroHijosController.text),
+          antiguedadConduccion: currentUser.antiguedadConduccion,
+          idRol: currentUser.idRol,
+          currentPassword: null,
+          newPassword: null,
         );
+
+        await _controller.updateProfile(userData);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Perfil actualizado exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _errorMessage = e.toString();
+          });
+
+          // Si es un error de contraseña, mostramos un mensaje más específico
+          String errorMessage;
+          if (e.toString().contains('contraseña actual es incorrecta')) {
+            errorMessage = 'La contraseña actual ingresada es incorrecta';
+          } else {
+            errorMessage = 'Error al actualizar el perfil: ${e.toString()}';
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Drawer items logic: supervisor vs others (entry/exit registration)
     final currentUser = CurrentUserController.currentUser!;
+    final roleLower = currentUser.rol.toLowerCase();
+    late List<DrawerItem> drawerItems;
+    if (roleLower.contains('supervisor')) {
+      drawerItems = [
+        DrawerItem(
+          titleKey: 'dashboard',
+          icon: AppIcons.home,
+          route: '/supervisor',
+        ),
+        DrawerItem(
+          titleKey: 'profile',
+          icon: AppIcons.profile,
+          route: '/profile',
+        ),
+        DrawerItem(
+          titleKey: 'register',
+          icon: AppIcons.manage_users,
+          route: '/register',
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const RegisterView()),
+            );
+          },
+        ),
+        DrawerItem(titleKey: 'logout', icon: AppIcons.logout, route: '/login'),
+      ];
+    } else {
+      final baseItems = [
+        DrawerItem(
+          titleKey: 'dashboard',
+          icon: AppIcons.home,
+          route:
+              roleLower.contains('nata') ? '/jefe-nata' : '/trabajador-helados',
+        ),
+        DrawerItem(
+          titleKey: 'profile',
+          icon: AppIcons.profile,
+          route: '/profile',
+        ),
+        DrawerItem(
+          titleKey: 'processes',
+          icon: AppIcons.assignments,
+          route: '/procesos',
+        ),
+        DrawerItem(titleKey: 'logout', icon: AppIcons.logout, route: '/login'),
+      ];
+      drawerItems = insertRegisterItems(baseItems, context, currentUser);
+    }
     return Scaffold(
+      drawer: AppDrawer(currentRoute: '/profile', items: drawerItems),
       appBar: AppBar(
         title: const Text('Mi Perfil'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        backgroundColor: Theme.of(context).primaryColor,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -190,28 +413,7 @@ class _ProfileViewState extends State<ProfileView> {
                 validator: _controller.validateDireccion,
               ),
               const SizedBox(height: 16),
-              CustomTextField(
-                label: 'Fecha de Nacimiento',
-                controller: _fechaNacimientoController,
-                icon: Icons.calendar_today,
-                readOnly: true,
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: currentUser.fechaNacimiento,
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-                  if (date != null) {
-                    setState(
-                      () =>
-                          _fechaNacimientoController.text =
-                              date.toIso8601String().split('T')[0],
-                    );
-                  }
-                },
-                validator: _controller.validateFechaNacimiento,
-              ),
+              _buildFechaNacimientoField(),
               const SizedBox(height: 16),
               CustomTextField(
                 label: 'Número de Hijos',
@@ -222,93 +424,19 @@ class _ProfileViewState extends State<ProfileView> {
                 validator: _controller.validateNumeroHijos,
               ),
               const SizedBox(height: 24),
-              CheckboxListTile(
-                title: const Text('Cambiar Contraseña'),
-                value: _showPasswordFields,
-                onChanged: (value) {
-                  setState(() {
-                    _showPasswordFields = value ?? false;
-                    if (!_showPasswordFields) {
-                      _currentPasswordController.clear();
-                      _newPasswordController.clear();
-                      _confirmPasswordController.clear();
-                    }
-                  });
+              CustomButton(
+                text: 'Cambiar Contraseña',
+                icon: Icons.lock_outline,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChangePasswordView(),
+                    ),
+                  );
                 },
+                isOutlined: true,
               ),
-              if (_showPasswordFields) ...[
-                const SizedBox(height: 16),
-                CustomTextField(
-                  label: 'Contraseña Actual',
-                  controller: _currentPasswordController,
-                  icon: Icons.lock,
-                  obscureText: _obscureCurrentPassword,
-                  validator:
-                      (value) =>
-                          _controller.validateCurrentPassword(value, null),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureCurrentPassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed:
-                        () => setState(
-                          () =>
-                              _obscureCurrentPassword =
-                                  !_obscureCurrentPassword,
-                        ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  label: 'Nueva Contraseña',
-                  controller: _newPasswordController,
-                  icon: Icons.lock_outline,
-                  obscureText: _obscureNewPassword,
-                  validator:
-                      (value) => _controller.validateNewPassword(
-                        value,
-                        _currentPasswordController.text,
-                      ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureNewPassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed:
-                        () => setState(
-                          () => _obscureNewPassword = !_obscureNewPassword,
-                        ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  label: 'Confirmar Nueva Contraseña',
-                  controller: _confirmPasswordController,
-                  icon: Icons.lock_outline,
-                  obscureText: _obscureConfirmPassword,
-                  validator:
-                      (value) => _controller.validateConfirmPassword(
-                        value,
-                        _newPasswordController.text,
-                      ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirmPassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed:
-                        () => setState(
-                          () =>
-                              _obscureConfirmPassword =
-                                  !_obscureConfirmPassword,
-                        ),
-                  ),
-                ),
-              ],
               const SizedBox(height: 24),
               if (_errorMessage != null)
                 Padding(

@@ -4,6 +4,9 @@ import '../views/profile_view.dart';
 // Importaciones para las nuevas pantallas (se crearán después)
 import '../views/registro_entrada_screen.dart';
 import '../views/registro_salida_screen.dart';
+// Add imports for Nata-specific registro screens
+import '../views/registro_entrada_nata_screen.dart';
+import '../views/registro_salida_nata_screen.dart';
 
 class CustomDrawer extends StatelessWidget {
   final int idPersona; // Nuevo parámetro
@@ -67,7 +70,10 @@ class CustomDrawer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('CI: $cedula', style: const TextStyle(fontSize: 14)),
-                Text(rol, style: const TextStyle(fontSize: 14)),
+                Text(
+                  rol.replaceAll('_', ' '),
+                  style: const TextStyle(fontSize: 14),
+                ),
               ],
             ),
           ),
@@ -102,13 +108,24 @@ class CustomDrawer extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder:
-                      (context) => RegistroEntradaScreen(
-                        idPersona: idPersona,
-                        nombres: nombres,
-                        apellidos: apellidos,
-                        rol: rol,
-                        idRol: 1, // TODO: Obtener el ID del rol del login
-                      ),
+                      (context) =>
+                          (rol.contains('NATA'))
+                              ? RegistroEntradaNataScreen(
+                                idPersona: idPersona,
+                                nombres: nombres,
+                                apellidos: apellidos,
+                                rol: rol,
+                                idRol:
+                                    1, // TODO: Obtener el ID del rol del login
+                              )
+                              : RegistroEntradaScreen(
+                                idPersona: idPersona,
+                                nombres: nombres,
+                                apellidos: apellidos,
+                                rol: rol,
+                                idRol:
+                                    1, // TODO: Obtener el ID del rol del login
+                              ),
                 ),
               );
             },
@@ -123,12 +140,20 @@ class CustomDrawer extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder:
-                      (context) => RegistroSalidaScreen(
-                        idPersona: idPersona,
-                        nombres: nombres,
-                        apellidos: apellidos,
-                        rol: rol,
-                      ),
+                      (context) =>
+                          (rol.contains('NATA'))
+                              ? RegistroSalidaNataScreen(
+                                idPersona: idPersona,
+                                nombres: nombres,
+                                apellidos: apellidos,
+                                rol: rol,
+                              )
+                              : RegistroSalidaScreen(
+                                idPersona: idPersona,
+                                nombres: nombres,
+                                apellidos: apellidos,
+                                rol: rol,
+                              ),
                 ),
               );
             },

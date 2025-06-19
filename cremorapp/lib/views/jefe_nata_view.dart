@@ -11,7 +11,6 @@ import '../utils/icons.dart';
 import '../utils/drawer_items_helper.dart';
 import 'registro_entrada_nata_screen.dart';
 import 'registro_salida_nata_screen.dart';
-import 'procesos_screen.dart';
 
 class JefeNataView extends StatelessWidget {
   const JefeNataView({super.key});

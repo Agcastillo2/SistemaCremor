@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import '../services/asistencia_service.dart';
+import '../controllers/current_user_controller.dart';
+import '../widgets/app_drawer.dart';
+import '../utils/icons.dart';
+import '../utils/drawer_items_helper.dart';
 
 class RegistroEntradaScreen extends StatefulWidget {
   final int idPersona;
@@ -32,7 +36,7 @@ class _RegistroEntradaScreenState extends State<RegistroEntradaScreen> {
   bool _isSubmitting = false;
   Map<String, String> _puestosMap = {}; // Para el dropdown
 
-  final List<String> _turnos = ['MAÑANA', 'TARDE', 'NOCHE', 'COMPLETO'];
+  final List<String> _turnos = ['MAÑANA', 'TARDE', 'NOCHE'];
   String? _turnoSeleccionado;
   String? _puestoSeleccionado;
 
@@ -221,6 +225,15 @@ class _RegistroEntradaScreenState extends State<RegistroEntradaScreen> {
                 ? DateTime.parse(registro['fecha_hora_salida'])
                 : null;
 
+        // Calcular tiempo trabajado
+        String tiempoTrabajado = '';
+        if (salida != null) {
+          final diferencia = salida.difference(entrada);
+          final horas = diferencia.inHours;
+          final minutos = diferencia.inMinutes.remainder(60);
+          tiempoTrabajado = '$horas horas y $minutos minutos';
+        }
+
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
           child: ListTile(
@@ -231,11 +244,18 @@ class _RegistroEntradaScreenState extends State<RegistroEntradaScreen> {
                 Text(
                   'Entrada: ${DateFormat('dd/MM/yyyy HH:mm:ss').format(entrada)}',
                 ),
-                if (salida != null)
+                if (salida != null) ...[
                   Text(
                     'Salida: ${DateFormat('dd/MM/yyyy HH:mm:ss').format(salida)}',
-                  )
-                else
+                  ),
+                  Text(
+                    'Tiempo trabajado: $tiempoTrabajado',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ] else
                   const Text(
                     'Salida: Pendiente',
                     style: TextStyle(color: Colors.orange),
@@ -249,11 +269,35 @@ class _RegistroEntradaScreenState extends State<RegistroEntradaScreen> {
     );
   }
 
+  // Lista de items base para el drawer
+  List<DrawerItem> get baseItems => [
+    DrawerItem(
+      titleKey: 'dashboard',
+      icon: AppIcons.home,
+      route: widget.rol.contains('NATA') ? '/jefe-nata' : '/jefe-helados',
+    ),
+    DrawerItem(titleKey: 'profile', icon: AppIcons.profile, route: '/profile'),
+    DrawerItem(
+      titleKey: 'processes',
+      icon: AppIcons.assignments,
+      route: '/procesos',
+    ),
+    DrawerItem(titleKey: 'logout', icon: AppIcons.logout, route: '/login'),
+  ];
+
+  // Lista completa de items para el drawer
+  List<DrawerItem> get drawerItems => insertRegisterItems(
+    baseItems,
+    context,
+    CurrentUserController.currentUser!,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: AppDrawer(currentRoute: '/registro-entrada', items: drawerItems),
       appBar: AppBar(
-        title: const Text('Registro de Entrada - Helados'),
+        title: const Text('Registro de Entrada'),
         backgroundColor: Theme.of(context).primaryColor,
       ),
       body: RefreshIndicator(

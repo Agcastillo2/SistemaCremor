@@ -6,6 +6,7 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../utils/theme.dart';
 import '../models/rol_model.dart';
+import '../utils/validators.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -78,11 +79,60 @@ class _RegisterViewState extends State<RegisterView> {
   Future<void> _selectFechaNacimiento() async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _fechaNacimiento ?? DateTime.now(),
+      initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
-    if (picked != null && picked != _fechaNacimiento) {
+
+    if (picked != null) {
+      // Validar la edad
+      final validationResult = Validators.validateFechaNacimiento(
+        picked.toIso8601String(),
+      );
+
+      if (validationResult.error != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(validationResult.error!),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      if (validationResult.needsConfirmation) {
+        if (!mounted) return;
+
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Advertencia de Edad'),
+              content: Text(
+                validationResult.confirmationMessage ??
+                    'La persona es menor de edad. ¿Desea continuar con el registro?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Continuar'),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (confirmed != true) {
+          return;
+        }
+      }
+
       setState(() {
         _fechaNacimiento = picked;
         _fechaNacimientoController.text = _dateFormat.format(picked);

@@ -41,10 +41,17 @@ def crear_proceso(proceso: ProcesoCreate, db: Session = Depends(get_db)):
     }
 
 @router.put("/{id_proceso}", response_model=ProcesoOut)
-def finalizar_proceso(id_proceso: int, datos: ProcesoUpdate, db: Session = Depends(get_db)):
+def finalizar_proceso(id_proceso: int, datos: ProcesoUpdate, id_persona: int, db: Session = Depends(get_db)):
     proceso = db.query(Proceso).filter(Proceso.id_proceso == id_proceso).first()
     if not proceso:
         raise HTTPException(status_code=404, detail="Proceso no encontrado")
+    
+    # Verificar que la persona que intenta finalizar el proceso es la misma que lo creó
+    if proceso.id_persona != id_persona:
+        raise HTTPException(
+            status_code=403,
+            detail="No tienes permiso para finalizar este proceso. Solo el jefe que inició el proceso puede finalizarlo."
+        )
     
     proceso.estado = datos.estado
     proceso.produccion_kg = datos.produccion_kg

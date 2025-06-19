@@ -1,8 +1,10 @@
 from datetime import date
 from enum import Enum
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 from .rol import NombreRol, Rol
+import re
+from datetime import datetime
 
 class EstadoCivil(str, Enum):
     SOLTERO = "SOLTERO"
@@ -55,11 +57,35 @@ class PersonaBase(BaseModel):
     vencimiento_licencia: Optional[date] = None
     antiguedad_conduccion: int = 0
     id_rol: Optional[int] = None
+    
+    @field_validator('fecha_nacimiento')
+    def validar_edad(cls, v, info):
+        today = date.today()
+        age = today.year - v.year - ((today.month, today.day) < (v.month, v.day))
+        if age < 16:
+            raise ValueError("No se puede registrar a una persona menor de 16 años")
+        elif age < 18:
+            # No lanzamos error, pero el frontend mostrará una advertencia
+            pass
+        return v
+
+    @field_validator('nombres', 'apellidos')
+    def validar_nombre(cls, v, info):
+        field_name = info.field_name
+        # Validar que no contenga números
+        if re.search(r'\d', v):
+            raise ValueError(f"El campo {field_name} no puede contener números")
+        
+        # Validar que no contenga caracteres especiales, permitiendo solo letras, espacios y tildes
+        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$', v):
+            raise ValueError(f"El campo {field_name} solo puede contener letras")
+        
+        return v
 
 class PersonaCreate(PersonaBase):
-    password: str
-    current_password: Optional[str] = None  # Campo para validar contraseña actual
-    new_password: Optional[str] = None      # Campo para nueva contraseña
+    password: str = None
+    current_password: Optional[str] = None
+    new_password: Optional[str] = None
 
 class Persona(PersonaBase):
     id_persona: int
