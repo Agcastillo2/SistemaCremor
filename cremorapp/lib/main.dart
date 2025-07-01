@@ -12,6 +12,7 @@ import 'views/supervisor_view.dart';
 import 'views/profile_view.dart';
 import 'views/register_view.dart';
 import 'views/procesos_screen.dart';
+import 'views/proceso_helados_screen.dart';
 
 import 'utils/theme_provider.dart';
 import 'utils/locale_provider.dart';
@@ -69,6 +70,7 @@ class CremorApp extends StatelessWidget {
         '/profile': (context) => const ProfileView(),
         '/register': (context) => const RegisterView(),
         '/procesos': (context) => const ProcesosScreen(),
+        '/proceso-helados': (context) => const ProcesoHeladosScreen(),
       },
     );
   }

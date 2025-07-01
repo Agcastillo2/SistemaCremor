@@ -11,6 +11,7 @@ from .reemplazo import router as reemplazo_router
 from .hora_extra import router as hora_extra_router
 from .notificacion import router as notificacion_router
 from .proceso import router as proceso_router
+from .produccion_helados import router as produccion_helados_router
 
 __all__ = [
     "persona_router", 
@@ -23,5 +24,6 @@ __all__ = [
     "reemplazo_router",
     "hora_extra_router",
     "notificacion_router",
-    "proceso_router"
+    "proceso_router",
+    "produccion_helados_router"
 ]

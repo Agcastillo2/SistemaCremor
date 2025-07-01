@@ -39,12 +39,13 @@ class ProcesoService {
   }) async {
     try {
       final response = await http.put(
-        Uri.parse('${ApiConfig.baseUrl}/procesos/$idProceso'),
+        Uri.parse(
+          '${ApiConfig.baseUrl}/procesos/$idProceso?id_persona=$idPersona',
+        ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'estado': 'Finalizado',
           'produccion_kg': produccionKg,
-          'id_persona': idPersona,
           if (lecheSobrante != null) 'leche_sobrante': lecheSobrante,
         }),
       );

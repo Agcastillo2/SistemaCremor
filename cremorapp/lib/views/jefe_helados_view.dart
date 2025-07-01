@@ -39,10 +39,11 @@ class JefeHeladosView extends StatelessWidget {
         icon: AppIcons.profile,
         route: '/profile',
       ),
+
       DrawerItem(
-        titleKey: 'assignments',
+        titleKey: 'Proceso Helados',
         icon: AppIcons.assignments,
-        route: '/assignments',
+        route: '/proceso-helados',
       ),
       DrawerItem(titleKey: 'logout', icon: AppIcons.logout, route: '/login'),
     ];
@@ -104,7 +105,9 @@ class JefeHeladosView extends StatelessWidget {
             icon: AppIcons.assignments,
             label: 'Nuevo Proceso',
             backgroundColor: Colors.green,
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/proceso-helados');
+            },
           ),
           SpeedDialItem(
             icon: AppIcons.person,

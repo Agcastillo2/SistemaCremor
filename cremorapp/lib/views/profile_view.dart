@@ -176,8 +176,9 @@ class _ProfileViewState extends State<ProfileView> {
         }
       },
       validator: (value) {
-        if (value == null || value.isEmpty)
+        if (value == null || value.isEmpty) {
           return 'La fecha de nacimiento es requerida';
+        }
         final result = Validators.validateFechaNacimiento(value);
         return result.error;
       },

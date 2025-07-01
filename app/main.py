@@ -15,7 +15,8 @@ from .routes import (
     reemplazo_router,
     hora_extra_router,
     notificacion_router,
-    proceso_router
+    proceso_router,
+    produccion_helados_router
 )
 
 from .models import (
@@ -29,7 +30,8 @@ from .models import (
     Reemplazo,
     Hora_Extra,
     Notificacion,
-    Proceso
+    Proceso,
+    ProduccionHelados
 )
 
 app = FastAPI(
@@ -51,6 +53,18 @@ app.include_router(reemplazo_router)
 app.include_router(hora_extra_router)
 app.include_router(notificacion_router)
 app.include_router(proceso_router)
+app.include_router(produccion_helados_router)  # Aseguramos que esté incluido
+
+# Configuración CORS
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite cualquier origen
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos los métodos
+    allow_headers=["*"],  # Permite todos los headers
+)
 
 @app.get("/", tags=["Root"])
 def read_root():

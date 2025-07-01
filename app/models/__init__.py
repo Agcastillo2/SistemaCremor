@@ -12,6 +12,7 @@ from .reemplazo import Reemplazo, TipoReemplazo, EstadoReemplazo
 from .hora_extra import Hora_Extra, TipoRegistroHoraExtra, TipoPagoDia, EstadoHoraExtra
 from .notificacion import Notificacion, PrioridadNotificacion, EstadoNotificacion, MotivoNotificacion
 from .proceso import Proceso
+from .produccion_helados import ProduccionHelados
 
 __all__ = [
     "Base",
@@ -25,5 +26,6 @@ __all__ = [
     "Reemplazo", "TipoReemplazo", "EstadoReemplazo",
     "Hora_Extra", "TipoRegistroHoraExtra", "TipoPagoDia", "EstadoHoraExtra",
     "Notificacion", "PrioridadNotificacion", "EstadoNotificacion", "MotivoNotificacion",
-    "Proceso"
+    "Proceso",
+    "ProduccionHelados"
 ]

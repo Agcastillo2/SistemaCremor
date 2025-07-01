@@ -132,6 +132,11 @@ class Persona(Base):
         cascade="all, delete-orphan"
     )
 
+    # 10. Relación con ProduccionHelados
+    producciones_helados = relationship(
+        "ProduccionHelados", back_populates="persona", cascade="all, delete-orphan"
+    )
+
     # Relación con procesos
     procesos = relationship("Proceso", back_populates="persona")
     

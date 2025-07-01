@@ -335,21 +335,10 @@ class _ProcesosScreenState extends State<ProcesosScreen> {
       return;
     }
 
-    // Verificar si el usuario actual es el creador del proceso
     final currentUser = CurrentUserController.currentUser;
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No hay usuario autenticado')),
-      );
-      return;
-    }
-
-    if (ultimoProceso!['id_persona'] != currentUser.idPersona) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Solo el jefe que inició el proceso puede finalizarlo'),
-          backgroundColor: Colors.red,
-        ),
       );
       return;
     }
@@ -363,9 +352,9 @@ class _ProcesosScreenState extends State<ProcesosScreen> {
       );
 
       setState(() {
-        procesosCongelados = false; // Descongelar la selección de procesos
-        selectedProcesoX = null; // Limpiar selección
-        selectedProcesoY = null; // Limpiar selección
+        procesosCongelados = false;
+        selectedProcesoX = null;
+        selectedProcesoY = null;
       });
 
       await _cargarDatos();
@@ -795,13 +784,6 @@ class _ProcesosScreenState extends State<ProcesosScreen> {
     return true;
   }
 
-  bool _puedeFinalizarProceso() {
-    if (ultimoProceso == null || !procesosCongelados) return false;
-    final currentUser = CurrentUserController.currentUser;
-    if (currentUser == null) return false;
-    return ultimoProceso!['id_persona'] == currentUser.idPersona;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -870,7 +852,7 @@ class _ProcesosScreenState extends State<ProcesosScreen> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed:
-                                _puedeFinalizarProceso()
+                                procesosCongelados
                                     ? _mostrarDialogoFinalizarProceso
                                     : null,
                             style: ElevatedButton.styleFrom(
@@ -906,4 +888,6 @@ class _ProcesosScreenState extends State<ProcesosScreen> {
               ),
     );
   }
+
+  // La función de permiso de finalización fue eliminada ya que cualquier usuario puede finalizar.
 }
